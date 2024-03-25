@@ -28,20 +28,24 @@ def main():
     model = load_model(MODEL_DEFAULT_PATH)
     uploaded_file = st.file_uploader("Upload a video file", type=["mp4"])
 
-
     if uploaded_file is not None:
         with open("temp_input_video.mp4", "wb") as f:
             f.write(uploaded_file.read())
         video_path = "temp_input_video.mp4"
 
         video_info = sv.VideoInfo.from_video_path(video_path)
-        LINE_START, LINE_END = line_configuration(video_info)
+
+        # Add sliders to adjust the y-coordinates of the line
+        line_start_y = st.sidebar.slider("Line Start Y-coordinate", min_value=0, max_value=video_info.height, value=video_info.height // 2)
+        line_end_y = st.sidebar.slider("Line End Y-coordinate", min_value=0, max_value=video_info.height, value=video_info.height // 2)
+
+        LINE_START, LINE_END = line_configuration(video_info, line_start_y, line_end_y)
 
         process_video(model, video_path, LINE_START, LINE_END)
 
-def line_configuration(video_info):
-    LINE_START = (0, video_info.height // 2)
-    LINE_END = (video_info.width, video_info.height // 2)
+def line_configuration(video_info, line_start_y, line_end_y):
+    LINE_START = (0, line_start_y)
+    LINE_END = (video_info.width, line_end_y)
     return LINE_START, LINE_END
 
 def process_video(model, video_path, LINE_START, LINE_END):
